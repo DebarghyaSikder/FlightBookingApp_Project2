@@ -1,0 +1,16 @@
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Build
+/bin/
+/target/
+/out/
+
+# Java
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
