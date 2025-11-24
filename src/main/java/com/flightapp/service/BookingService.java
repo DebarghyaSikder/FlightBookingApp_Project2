@@ -111,7 +111,7 @@ public class BookingService {
                 );
     }
 
-    public Mono<Void> cancelBooking(String pnr) {
+    public Mono<Void> cancelBooking(String pnr, String loggedInEmail) {
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -119,6 +119,11 @@ public class BookingService {
                 .switchIfEmpty(Mono.error(
                         new ResourceNotFoundException("Booking not found for PNR: " + pnr)))
                 .flatMap(booking -> {
+
+                    if (!booking.getUserEmail().equalsIgnoreCase(loggedInEmail)) {
+                        return Mono.error(new BusinessException(
+                                "You can cancel only your own bookings"));
+                    }
 
                     if (booking.getStatus() == BookingStatus.CANCELLED) {
                         return Mono.error(new BusinessException("Ticket already cancelled"));
@@ -145,6 +150,7 @@ public class BookingService {
                             });
                 });
     }
+
 
     private TicketResponse mapToTicketResponse(Booking booking, Flight flight) {
 
