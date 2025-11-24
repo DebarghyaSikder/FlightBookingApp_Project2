@@ -34,6 +34,21 @@ public class BookingService {
 
     public Mono<TicketResponse> bookTicket(String flightId, BookingRequest request) {
 
+    	
+    	 if (request.getPassengers() == null || request.getSeatNumbers() == null) {
+    	        return Mono.error(new BusinessException("Passengers and seat numbers are required"));
+    	    }
+
+    	    int requested = request.getNumberOfSeats();
+    	    int passengerCount = request.getPassengers().size();
+    	    int seatCount = request.getSeatNumbers().size();
+
+    	    if (requested != passengerCount || requested != seatCount) {
+    	        return Mono.error(new BusinessException(
+    	                "Number of seats must match passengers count and seat numbers count"));
+    	    }
+
+    	    
         return flightRepository.findById(flightId)
                 .switchIfEmpty(Mono.error(
                         new ResourceNotFoundException("Flight not found with id: " + flightId)))
