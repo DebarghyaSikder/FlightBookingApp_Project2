@@ -11,6 +11,7 @@ import com.flightapp.dto.FlightSearchRequest;
 import com.flightapp.dto.FlightSearchResponse;
 import com.flightapp.dto.InventoryRequest;
 import com.flightapp.dto.TicketResponse;
+import com.flightapp.exception.BusinessException;
 import com.flightapp.model.Flight;
 import com.flightapp.service.BookingService;
 import com.flightapp.service.FlightService;
@@ -61,7 +62,13 @@ public class FlightController {
     )
     public Mono<ResponseEntity<TicketResponse>> bookTicket(
             @PathVariable("flightId") String flightId,
+            @RequestHeader("X-User-Email") String loggedInEmail,
             @Valid @RequestBody BookingRequest request) {
+
+        if (!loggedInEmail.equalsIgnoreCase(request.getUserEmail())) {
+            return Mono.error(new BusinessException(
+                    "Logged-in user email does not match booking email"));
+        }
 
         return bookingService.bookTicket(flightId, request)
                 .map(ticket -> ResponseEntity.status(HttpStatus.CREATED).body(ticket));
@@ -82,14 +89,25 @@ public class FlightController {
             path = "/booking/history/{emailId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Flux<TicketResponse> getBookingHistory(@PathVariable("emailId") String emailId) {
+    public Flux<TicketResponse> getBookingHistory(
+            @PathVariable("emailId") String emailId,
+            @RequestHeader("X-User-Email") String loggedInEmail) {
+
+        if (!loggedInEmail.equalsIgnoreCase(emailId)) {
+            return Flux.error(new BusinessException(
+                    "You can only view booking history for your own email"));
+        }
+
         return bookingService.getBookingHistory(emailId);
     }
 
     // DELETE /api/v1.0/flight/booking/cancel/{pnr}
     @DeleteMapping(path = "/booking/cancel/{pnr}")
-    public Mono<ResponseEntity<Void>> cancelBooking(@PathVariable("pnr") String pnr) {
-        return bookingService.cancelBooking(pnr)
+    public Mono<ResponseEntity<Void>> cancelBooking(
+            @PathVariable("pnr") String pnr,
+            @RequestHeader("X-User-Email") String loggedInEmail) {
+
+        return bookingService.cancelBooking(pnr, loggedInEmail)
                 .then(Mono.just(ResponseEntity.noContent().build()));
     }
 }
