@@ -7,8 +7,8 @@ import java.util.List;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.flightapp.flightwebfluxmongo.model.enums.BookingStatus;
-import com.flightapp.flightwebfluxmongo.model.enums.MealType;
+import com.flightapp.model.enums.BookingStatus;
+import com.flightapp.model.enums.MealType;
 
 @Document(collection = "bookings")
 public class Booking {
