@@ -3,6 +3,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +23,7 @@ public class InventoryRequest {
     private String toPlace;
 
     @NotNull(message = "Departure date is required")
+    @FutureOrPresent(message = "Departure date cannot be in the past")
     private LocalDate departureDate;
 
     @NotNull(message = "Departure time is required")
@@ -30,9 +33,10 @@ public class InventoryRequest {
     private LocalTime arrivalTime;
 
     @NotNull(message = "One way price is required")
-    @Min(value = 0, message = "Price cannot be negative")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be positive")
     private BigDecimal oneWayPrice;
 
+    @DecimalMin(value = "0.0", inclusive = false, message = "Round trip price must be positive")
     private BigDecimal roundTripPrice;
 
     private boolean roundTripAvailable;
