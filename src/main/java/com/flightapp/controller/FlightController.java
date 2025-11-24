@@ -1,5 +1,5 @@
 package com.flightapp.controller;
-
+import com.flightapp.dto.UpdateBookingRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -110,4 +110,19 @@ public class FlightController {
         return bookingService.cancelBooking(pnr, loggedInEmail)
                 .then(Mono.just(ResponseEntity.noContent().build()));
     }
+    
+    @PutMapping(
+            path = "/booking/update/{pnr}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Mono<ResponseEntity<TicketResponse>> updateBookingMeal(
+            @PathVariable("pnr") String pnr,
+            @RequestHeader("X-User-Email") String loggedInEmail,
+            @Valid @RequestBody UpdateBookingRequest request) {
+
+        return bookingService.updateMealType(pnr, loggedInEmail, request.getMealType())
+                .map(ResponseEntity::ok);
+    }
+
 }
