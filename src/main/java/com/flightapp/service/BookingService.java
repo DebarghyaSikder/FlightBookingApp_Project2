@@ -11,6 +11,7 @@ import com.flightapp.exception.ResourceNotFoundException;
 import com.flightapp.model.Booking;
 import com.flightapp.model.Flight;
 import com.flightapp.model.enums.BookingStatus;
+import com.flightapp.model.enums.MealType;
 import com.flightapp.repository.BookingRepository;
 import com.flightapp.repository.FlightRepository;
 
@@ -150,6 +151,48 @@ public class BookingService {
                             });
                 });
     }
+    
+    
+    
+    public Mono<TicketResponse> updateMealType(String pnr,
+            String loggedInEmail,
+            MealType newMealType) {
+
+LocalDateTime now = LocalDateTime.now();
+
+return bookingRepository.findByPnr(pnr)
+.switchIfEmpty(Mono.error(
+new ResourceNotFoundException("Booking not found for PNR: " + pnr)))
+.flatMap(booking -> {
+
+if (!booking.getUserEmail().equalsIgnoreCase(loggedInEmail)) {
+return Mono.error(new BusinessException(
+"You can update only your own bookings"));
+}
+
+if (booking.getStatus() == BookingStatus.CANCELLED) {
+return Mono.error(new BusinessException(
+"Cannot update a cancelled booking"));
+}
+
+LocalDateTime journeyTime = booking.getJourneyDepartureDateTime();
+if (journeyTime.minusHours(24).isBefore(now)) {
+return Mono.error(new BusinessException(
+"Ticket can only be updated more than 24 hours before journey time"));
+}
+
+booking.setMealType(newMealType);
+
+return flightRepository.findById(booking.getFlightId())
+.switchIfEmpty(Mono.error(
+ new ResourceNotFoundException("Flight not found")))
+.flatMap(flight ->
+ bookingRepository.save(booking)
+         .map(saved -> mapToTicketResponse(saved, flight))
+);
+});
+}
+
 
 
     private TicketResponse mapToTicketResponse(Booking booking, Flight flight) {
