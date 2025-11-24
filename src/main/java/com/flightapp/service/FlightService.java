@@ -8,6 +8,8 @@ import com.flightapp.dto.InventoryRequest;
 import com.flightapp.model.Flight;
 import com.flightapp.repository.FlightRepository;
 import com.flightapp.exception.ResourceNotFoundException;
+import com.flightapp.exception.BusinessException;
+
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,6 +25,21 @@ public class FlightService {
 
     public Mono<Flight> addInventory(InventoryRequest request) {
 
+    	if (request.getFromPlace().equalsIgnoreCase(request.getToPlace())) {
+            return Mono.error(new BusinessException("From and To place cannot be same"));
+        }
+
+        if (request.getRoundTripAvailable() && request.getRoundTripPrice() == null) {
+            return Mono.error(new BusinessException("Round trip price is required when round trip is available"));
+        }
+
+        // arrival after departure (same day assumption)
+        if (request.getArrivalTime().isBefore(request.getDepartureTime())) {
+            return Mono.error(new BusinessException("Arrival time cannot be before departure time"));
+        }
+    	
+    	
+    	
         Flight flight = new Flight();
         flight.setAirlineName(request.getAirlineName());
         flight.setAirlineLogoUrl(request.getAirlineLogoUrl());
@@ -40,7 +57,18 @@ public class FlightService {
         return flightRepository.save(flight);
     }
 
+
     public Flux<FlightSearchResponse> searchFlights(FlightSearchRequest request) {
+
+        if (request.getFromPlace().equalsIgnoreCase(request.getToPlace())) {
+            return Flux.error(new BusinessException("From and To place cannot be same"));
+        }
+
+        String tripType = request.getTripType();
+        if (!"ONE_WAY".equalsIgnoreCase(tripType)
+                && !"ROUND_TRIP".equalsIgnoreCase(tripType)) {
+            return Flux.error(new BusinessException("Trip type must be ONE_WAY or ROUND_TRIP"));
+        }
 
         Flux<Flight> flights = flightRepository
                 .findByFromPlaceIgnoreCaseAndToPlaceIgnoreCaseAndDepartureDate(
@@ -49,13 +77,8 @@ public class FlightService {
                         request.getTravelDate()
                 );
 
-        String tripType = request.getTripType();
-        if (tripType != null && !tripType.isBlank()) {
-            if ("ROUND_TRIP".equalsIgnoreCase(tripType)) {
-                // for round trip, only show flights that actually support round trip
-                flights = flights.filter(Flight::isRoundTripAvailable);
-            }
-            // for ONE_WAY we don’t add extra filter (all are allowed)
+        if ("ROUND_TRIP".equalsIgnoreCase(tripType)) {
+            flights = flights.filter(Flight::isRoundTripAvailable);
         }
 
         return flights.map(this::mapToSearchResponse);

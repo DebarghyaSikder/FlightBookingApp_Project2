@@ -36,20 +36,29 @@ public class BookingService {
     public Mono<TicketResponse> bookTicket(String flightId, BookingRequest request) {
 
     	
-    	 if (request.getPassengers() == null || request.getSeatNumbers() == null) {
-    	        return Mono.error(new BusinessException("Passengers and seat numbers are required"));
-    	    }
+    	if (request.getPassengers() == null || request.getSeatNumbers() == null) {
+            return Mono.error(new BusinessException("Passengers and seat numbers are required"));
+        }
 
-    	    int requested = request.getNumberOfSeats();
-    	    int passengerCount = request.getPassengers().size();
-    	    int seatCount = request.getSeatNumbers().size();
+        int requested = request.getNumberOfSeats();
+        int passengerCount = request.getPassengers().size();
+        int seatCount = request.getSeatNumbers().size();
 
-    	    if (requested != passengerCount || requested != seatCount) {
-    	        return Mono.error(new BusinessException(
-    	                "Number of seats must match passengers count and seat numbers count"));
-    	    }
+        if (requested != passengerCount || requested != seatCount) {
+            return Mono.error(new BusinessException(
+                    "Number of seats must match passengers count and seat numbers count"));
+        }
 
-    	    
+        // check for blank or duplicate seats
+        if (request.getSeatNumbers().stream().anyMatch(s -> s == null || s.isBlank())) {
+            return Mono.error(new BusinessException("Seat numbers cannot be blank"));
+        }
+
+        long distinctSeatCount = request.getSeatNumbers().stream().distinct().count();
+        if (distinctSeatCount != seatCount) {
+            return Mono.error(new BusinessException("Seat numbers must be unique"));
+        }
+
         return flightRepository.findById(flightId)
                 .switchIfEmpty(Mono.error(
                         new ResourceNotFoundException("Flight not found with id: " + flightId)))
