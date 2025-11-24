@@ -41,14 +41,25 @@ public class FlightService {
 
     public Flux<FlightSearchResponse> searchFlights(FlightSearchRequest request) {
 
-        return flightRepository
+        Flux<Flight> flights = flightRepository
                 .findByFromPlaceIgnoreCaseAndToPlaceIgnoreCaseAndDepartureDate(
                         request.getFromPlace(),
                         request.getToPlace(),
                         request.getTravelDate()
-                )
-                .map(this::mapToSearchResponse);
+                );
+
+        String tripType = request.getTripType();
+        if (tripType != null && !tripType.isBlank()) {
+            if ("ROUND_TRIP".equalsIgnoreCase(tripType)) {
+                // for round trip, only show flights that actually support round trip
+                flights = flights.filter(Flight::isRoundTripAvailable);
+            }
+            // for ONE_WAY we don’t add extra filter (all are allowed)
+        }
+
+        return flights.map(this::mapToSearchResponse);
     }
+
 
     private FlightSearchResponse mapToSearchResponse(Flight flight) {
         FlightSearchResponse response = new FlightSearchResponse();
