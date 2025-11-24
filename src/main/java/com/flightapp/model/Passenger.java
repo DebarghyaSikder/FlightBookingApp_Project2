@@ -16,6 +16,7 @@ public class Passenger {
 
     @NotNull(message = "Passenger age is required")
     @Min(value = 0, message = "Age cannot be negative")
+    @jakarta.validation.constraints.Max(value = 120, message = "Age seems invalid")
     private Integer age;
 
     public String getName() {
