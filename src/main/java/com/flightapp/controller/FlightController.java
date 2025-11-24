@@ -53,6 +53,19 @@ public class FlightController {
     public Flux<FlightSearchResponse> searchFlights(@Valid @RequestBody FlightSearchRequest request) {
         return flightService.searchFlights(request);
     }
+    
+ // POST /api/v1.0/flight/search/ids
+    @PostMapping(
+            path = "/search/ids",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Flux<String> searchFlightIds(@Valid @RequestBody FlightSearchRequest request) {
+        return flightService.searchFlightIds(request);
+    }
+
+    
+    
 
     // POST /api/v1.0/flight/booking/{flightId}
     @PostMapping(
