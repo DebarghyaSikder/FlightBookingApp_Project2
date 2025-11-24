@@ -1,7 +1,5 @@
 package com.flightapp.controller;
 
-package com.flightapp.controller;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -49,3 +47,4 @@ class FlightControllerTest {
                 .jsonPath("$.airlineName").isEqualTo("Test Airline");
     }
 }
+

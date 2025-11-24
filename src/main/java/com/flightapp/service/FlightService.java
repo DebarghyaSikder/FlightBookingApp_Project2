@@ -29,7 +29,7 @@ public class FlightService {
             return Mono.error(new BusinessException("From and To place cannot be same"));
         }
 
-        if (request.getRoundTripAvailable() && request.getRoundTripPrice() == null) {
+        if (request.isRoundTripAvailable() && request.getRoundTripPrice() == null) {
             return Mono.error(new BusinessException("Round trip price is required when round trip is available"));
         }
 
