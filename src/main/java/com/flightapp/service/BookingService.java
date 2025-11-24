@@ -127,8 +127,9 @@ public class BookingService {
                     }
 
                     if (booking.getStatus() == BookingStatus.CANCELLED) {
-                        return Mono.error(new BusinessException("Ticket already cancelled"));
+                        return Mono.error(new ResourceNotFoundException("Booking already cancelled or not found"));
                     }
+
 
                     LocalDateTime journeyTime = booking.getJourneyDepartureDateTime();
                     if (journeyTime.minusHours(24).isBefore(now)) {
