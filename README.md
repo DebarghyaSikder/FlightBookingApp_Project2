@@ -138,20 +138,20 @@ Business rules:
 ## API Endpoints
 1. Add Flight Inventory
 
-- POST /api/v1.0/flight/airline/inventory
+- `POST /api/v1.0/flight/airline/inventory`
 
--This is the endpoint used internally by the “airline admin” to add a new flight to the system. It stores details like the airline name, route, timings, prices, and number of seats. If a flight is added successfully, the service returns 201 Created along with the generated flight ID.
+-This is the endpoint used internally by the “airline admin” to add a new flight to the system. It stores details like the airline name, route, timings, prices, and number of seats. If a flight is added successfully, the service returns `201 Created` along with the generated flight ID.
 
 2. Search Flights (Full Details)
 
-- POST /api/v1.0/flight/search
+- `POST /api/v1.0/flight/search`
 
 - This endpoint is used by users to search flights between two places on a given date. It returns full details of matching flights — timings, prices, airline, and available seats.
-- It always returns a 200 OK for a valid search
+- It always returns a `200 OK` for a valid search
 
 3. Search Flights (IDs Only)
 
-- POST /api/v1.0/flight/search/ids
+- `POST /api/v1.0/flight/search/ids`
 
 - This is a lighter version of the search API. Instead of returning full flight details, it only sends back the IDs of matching flights.
 - If no flights match, this one returns 404 Not Found with a clear message.
@@ -159,8 +159,8 @@ Business rules:
 
  4. Book Ticket
 
-- POST /api/v1.0/flight/booking/{flightId}
-- Header required: X-User-Email
+- `POST /api/v1.0/flight/booking/{flightId}`
+- Header required: `X-User-Email`
 
 - This is the main booking endpoint. The user provides their own email, passenger list, seat numbers, and meal preference.
 - The server verifies a few things:
@@ -170,30 +170,30 @@ Business rules:
 - The flight must have enough available seats
 
 -If everything checks out, the booking is confirmed and a PNR is generated.
--Response code is 201 Created.
+-Response code is `201 Created`.
 
 5. Get Ticket by PNR
 
-- GET /api/v1.0/flight/ticket/{pnr}
+- `GET /api/v1.0/flight/ticket/{pnr}`
 
 - This endpoint fetches the complete ticket details for a given PNR.
 - If the PNR is valid, you get the flight info, booking status, passenger list, etc.
-- If not, the endpoint returns 404 Not Found.
+- If not, the endpoint returns `404 Not Found`.
 - This is typically used right after booking, or when a user wants to view their ticket later.
 
 6. View Booking History
 
-- GET /api/v1.0/flight/booking/history/{emailId}
-- Header required: X-User-Email
+- `GET /api/v1.0/flight/booking/history/{emailId}`
+- Header required: `X-User-Email`
 
 - This fetches all bookings made by a particular user.
 - The email in the header must match the email in the path — this prevents users from viewing each other’s booking history.
-- If the user has no bookings, it simply returns an empty list with 200 OK.
+- If the user has no bookings, it simply returns an empty list with `200 OK`.
 
  7. Update Ticket (Meal Type Only)
 
-- PUT /api/v1.0/flight/booking/update/{pnr}
-- Header required: X-User-Email
+- `PUT /api/v1.0/flight/booking/update/{pnr}`
+- Header required: `X-User-Email`
 
 - This endpoint allows the user to change their meal preference (VEG to NON_VEG, or vice versa).
 - Only the owner of the ticket can update it.
@@ -202,17 +202,17 @@ Some rules for this :
 - The ticket must not be cancelled
 - The journey must be more than 24 hours away
 - Meal type is the only thing that can be updated
-- If all conditions are met, the ticket is updated and 200 OK is returned.
+- If all conditions are met, the ticket is updated and `200 OK` is returned.
 
  8. Cancel Ticket
 
-- DELETE /api/v1.0/flight/booking/cancel/{pnr}
-- Header required: X-User-Email
+- `DELETE /api/v1.0/flight/booking/cancel/{pnr}`
+- Header required: `X-User-Email`
 
 - This endpoint cancels a ticket and releases the booked seats back to the flight.
 - Cancellation is only allowed if the journey is more than 24 hours away.
-- The first cancellation attempt returns 204 No Content.
+- The first cancellation attempt returns `204 No Content`.
 
 - But if the same PNR is cancelled again:
-- It returns 404 Not Found (because the ticket is already cancelled)
+- It returns `404 Not Found` (because the ticket is already cancelled)
 - This prevents duplicate cancellations.
